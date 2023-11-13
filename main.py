@@ -107,7 +107,8 @@ if pdf is not None:
             st.chat_message("user").write(msg.content)
         memory.chat_memory.add_message(msg)
 
-    if prompt := st.chat_input(placeholder=starter_message):
+    prompt = st.chat_input(placeholder=starter_message)
+    if prompt:
         st.chat_message("user").write(prompt)
         with st.chat_message("assistant"):
             st_callback = StreamlitCallbackHandler(st.container())
