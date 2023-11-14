@@ -70,7 +70,7 @@ if pdf is not None:
     tools = [tool]
 
     # making LLM (Language Model)
-    llm = ChatOpenAI(temperature=0, streaming=True, model="gpt-4")
+    llm = ChatOpenAI(temperature=0, streaming=True, model='gpt-3.5-turbo-0613')
     message = SystemMessage(
         content=(
             "You are a helpful chatbot who is tasked with answering questions about USED IMPORTS AUTO LLC."
