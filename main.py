@@ -124,11 +124,11 @@ if pdf is not None:
             run_id = response["__run"].run_id
 
             col_blank, col_text, col1, col2 = st.columns([10, 2, 1, 1])
-            with col_text:
-                st.text("Feedback:")
+            # with col_text:
+            #     st.text("Feedback:")
 
-            with col1:
-                st.button("👍", on_click=send_feedback, args=(run_id, 1))
-
-            with col2:
-                st.button("👎", on_click=send_feedback, args=(run_id, 0))
+            # with col1:
+            #     st.button("👍", on_click=send_feedback, args=(run_id, 1))
+            #
+            # with col2:
+            #     st.button("👎", on_click=send_feedback, args=(run_id, 0))
