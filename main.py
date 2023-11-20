@@ -6,10 +6,13 @@ from langchain.agents.agent_toolkits import create_retriever_tool
 from langchain.agents.openai_functions_agent.agent_token_buffer_memory import (AgentTokenBufferMemory,)
 from langchain.callbacks import StreamlitCallbackHandler
 from langchain.chat_models import ChatOpenAI
+from langchain.document_loaders import PyPDFLoader
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.prompts import MessagesPlaceholder
 from langchain.schema import SystemMessage, AIMessage, HumanMessage
 from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.tools import Tool
+from langchain.utilities.serpapi import SerpAPIWrapper
 from langchain.vectorstores.faiss import FAISS
 from langsmith import Client
 
@@ -50,6 +53,10 @@ if pdf is not None:
         vectorstore = FAISS.from_texts(chunks, embeddings)
         return vectorstore.as_retriever(search_kwargs={"k": 4})
 
+
+    # defining search tool using SerpAPIWrapper
+    search = SerpAPIWrapper()
+
     # making tool for agent
     tool = create_retriever_tool(
         configure_retriever(pdf),
@@ -66,8 +73,17 @@ if pdf is not None:
         "USED IMPORTS AUTO LLC, so if you are ever asked about USED IMPORTS AUTO LLC you should use this tool.",
     )
 
+    search_tool = Tool(
+        name = "Search",
+        func=search.run,
+        description="If you cannot find the answer in LLC documents and the user query is related to vehicles"
+                    "then Use this to lookup information from google search \
+                    engine and if the query isn't related to the vehicles and its finance just don't use this tool"
+                    "and answer with that kindly ask only about vehicles information as we deal only vehicles.",
+    )
+
     # agent excess tool in a list
-    tools = [tool]
+    tools = [tool, search_tool]
 
     # making LLM (Language Model)
     llm = ChatOpenAI(temperature=0, streaming=True, model='gpt-3.5-turbo-0613')
@@ -83,6 +99,7 @@ if pdf is not None:
         system_message=message,
         extra_prompt_messages=[MessagesPlaceholder(variable_name="history")],
     )
+
     agent = OpenAIFunctionsAgent(llm=llm, tools=tools, prompt=prompt)
     agent_executor = AgentExecutor(
         agent=agent,
