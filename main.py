@@ -1,9 +1,9 @@
 import streamlit as st
 from PyPDF2 import PdfReader
 from dotenv import load_dotenv
-from langchain.agents import OpenAIFunctionsAgent, AgentExecutor, create_sql_agent, AgentType
-from langchain.agents.agent_toolkits import create_retriever_tool, SQLDatabaseToolkit
-from langchain.agents.openai_functions_agent.agent_token_buffer_memory import (AgentTokenBufferMemory,)
+from langchain.agents import OpenAIFunctionsAgent, AgentExecutor
+from langchain.agents.agent_toolkits import create_retriever_tool
+from langchain.agents.openai_functions_agent.agent_token_buffer_memory import (AgentTokenBufferMemory, )
 from langchain.callbacks import StreamlitCallbackHandler
 from langchain.chat_models import ChatOpenAI
 from langchain.embeddings import OpenAIEmbeddings
@@ -11,11 +11,12 @@ from langchain.prompts import MessagesPlaceholder
 from langchain.schema import SystemMessage, AIMessage, HumanMessage
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.tools import Tool
-from langchain_experimental.sql import SQLDatabaseChain
 from langchain.utilities.serpapi import SerpAPIWrapper
 from langchain.utilities.sql_database import SQLDatabase
 from langchain.vectorstores.faiss import FAISS
+from langchain_experimental.sql import SQLDatabaseChain
 from langsmith import Client
+
 from string_variables import *
 
 client = Client()
@@ -76,6 +77,7 @@ if pdf is not None:
         description=SEARCH_TOOL_DESCRIPTION,
     )
 
+
     db_chain = SQLDatabaseChain.from_llm(llm, db, verbose=True,)
     sql_tool = Tool(
         name="sql_database_tool",
@@ -129,9 +131,10 @@ if pdf is not None:
         st.chat_message("user").write(prompt)
         print(f"3- {prompt}")
         with st.chat_message("assistant"):
-            # st_callback = StreamlitCallbackHandler(st.container())
+            st_callback = StreamlitCallbackHandler(st.container())
             response = agent_executor(
                 inputs={"input": prompt, "history": st.session_state.messages},
+                callbacks=[st_callback],
                 include_run_info=True,
             )
             st.session_state.messages.append(AIMessage(content=response["output"]))
