@@ -1,23 +1,20 @@
 import streamlit as st
 from PyPDF2 import PdfReader
-import pyodbc
-from langchain_community.agent_toolkits import create_sql_agent, SQLDatabaseToolkit
 from dotenv import load_dotenv
 from langchain.agents import OpenAIFunctionsAgent, AgentExecutor
 from langchain.agents.agent_toolkits import create_retriever_tool
 from langchain.agents.openai_functions_agent.agent_token_buffer_memory import AgentTokenBufferMemory
-from langchain.callbacks import StreamlitCallbackHandler
 from langchain.chat_models import ChatOpenAI
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.prompts import MessagesPlaceholder
-from langchain.schema import SystemMessage, AIMessage, HumanMessage
+from langchain.schema import SystemMessage, AIMessage
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.tools import Tool
 from langchain.utilities.serpapi import SerpAPIWrapper
 from langchain.utilities.sql_database import SQLDatabase
 from langchain.vectorstores.faiss import FAISS
-from langchain_experimental.sql import SQLDatabaseChain
-from sql_agent import full_prompt, few_shot_prompt
+from langchain_community.agent_toolkits import create_sql_agent, SQLDatabaseToolkit
+
 from string_variables import SQL_TOOL_DESCRIPTION, SEARCH_TOOL_DESCRIPTION, DOCUMENT_TOOL_DESCRIPTION, PROMPT
 
 # Set up Streamlit page
@@ -39,7 +36,8 @@ if not selected_brand:
 
 # Constants and Configurations
 PDF_DIR = "./brands_docs/"
-DB_URI = 'mssql+pyodbc://DESKTOP-1K1JR1Q/Inventory360?driver=ODBC+Driver+17+for+SQL+Server'
+DB_URI = 'postgresql+psycopg2://postgres:root@localhost:5432/inventory360'
+# DB_URI = psycopg2.connect(host='172.212.83.28', dbname='inventory360', user='postgres', password='root')
 SYSTEM_CONTENT_MESSAGE = (
     f"You are an Customer Support agent and you are bound to answer questions related to the {selected_brand} Cars."
     f"You have documents if user asks somethings related to policies and general information related to cars."
@@ -82,8 +80,11 @@ def setup_search_tool():
 
 
 def setup_sql_tool(llm):
-    db = SQLDatabase.from_uri(DB_URI, include_tables=['InventoryLog'])
-    toolkit = SQLDatabaseToolkit(db=db, llm=llm,)
+    try:
+        db = SQLDatabase.from_uri(DB_URI, include_tables=['inventorylog'])
+    except Exception as e:
+        print(f"Error connecting to Postgres Database: {str(e)}")
+    toolkit = SQLDatabaseToolkit(db=db, llm=llm, )
     agent_executor = create_sql_agent(
         llm=llm,
         db=db,
@@ -116,7 +117,7 @@ def create_agent(llm, tools):
 # Main Application Logic
 pdf_path = f"{PDF_DIR}{selected_brand}.pdf"
 pdf_text = get_pdf_text(pdf_path)
-llm = ChatOpenAI(temperature=0,  model='gpt-4-0613', streaming=True)
+llm = ChatOpenAI(temperature=0, model='gpt-4-0613', streaming=True)
 document_tool = setup_document_tool(pdf_text)
 search_tool = setup_search_tool()
 sql_tool = setup_sql_tool(llm)
@@ -138,10 +139,10 @@ prompt = st.chat_input(placeholder=starter_message)
 if prompt:
     st.chat_message("user").write(prompt)
     with st.chat_message("assistant"):
-        st_callback = StreamlitCallbackHandler(st.container())
+        # st_callback = StreamlitCallbackHandler(st.container())
         response = agent_executor(
             inputs={"input": prompt, "history": st.session_state.messages, },
-            callbacks=[st_callback],
+            callbacks=[],
             include_run_info=True,
         )
         output_msg = AIMessage(content=response["output"])

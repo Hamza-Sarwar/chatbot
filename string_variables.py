@@ -21,14 +21,14 @@ SEARCH_TOOL_DESCRIPTION = (
 
 
 SQL_TOOL_DESCRIPTION = """If question is ask about the car/vehicles information which is in inventory then
-use this tool. You have a database named, Inventory360 and a table named, InventoryLog. Search the records
+use this tool. You have a database named, inventory360 and a table named, inventorylog. Search the records
 here and gives the answer with brief details of the car or cars as the sales manager does. Dont answer like Yes
  or no we have or dont have etc.
  In case the query Result is empty or you dont find any relevent data in the inventory then recommend similar
  cars to the customer by querying again by altering the make, model or year"""
 
-_DEFAULT_TEMPLATE = """Given an input question, first create a syntactically correct {dialect} query to run in MS SQL 
-Server, then look at the results of the query and return the answer.
+_DEFAULT_TEMPLATE = """Given an input question, first create a postgres syntactically correct {dialect} query to run, 
+then look at the results of the query and return the answer.
 Use the following format:
 
 Question: "Question here"
