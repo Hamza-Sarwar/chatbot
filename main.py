@@ -84,7 +84,6 @@ def setup_sql_tool(llm):
     toolkit = SQLDatabaseToolkit(db=db, llm=llm, )
     agent_executor = create_sql_agent(
         llm=llm,
-        db=db,
         toolkit=toolkit,
         prompt=PROMPT,
         verbose=True
