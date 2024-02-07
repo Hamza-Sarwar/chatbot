@@ -1,43 +1,100 @@
-DOCUMENT_TOOL_DESCRIPTION = "Searches and returns texts regarding USED IMPORTS AUTO LLC." \
-                            "The provided text appears to be a set of frequently asked questions (FAQs) " \
-                            "or guidelines for a business i.e USED IMPORTS AUTO LLC dealing with vehicles. " \
-                            "It covers various topics related to vehicle condition, vehicle history issues, " \
-                            "trade appraisal, ending conversations with customers, updating tasks and " \
-                            "notes, marking situations as lost, and offering a referral program. It also mentions " \
-                            "the option to switch vehicles using a filter from the website or inventory module. " \
-                            "These guidelines seem to be aimed at employees or representatives who interact with " \
-                            "customers in the context of buying or selling vehicles. If you are ever asked about " \
-                            "USED IMPORTS AUTO LLC you should use this tool."
 
-SEARCH_TOOL_DESCRIPTION = "If you cannot find the answer in LLC documents and the user query is related to vehicles " \
-                          "then Use this to lookup information from google search engine and if the query isn't " \
-                          "related to the vehicles and its finance just don't use this tool and answer with that " \
-                          "kindly ask only about vehicles information as we deal only vehicles."
+from langchain.prompts.prompt import PromptTemplate
 
-SQL_TOOL_DESCRIPTION = "If user asks something about cars/vehicles information, like pricing etc you will search in"\
-                        " db. But before running the query and check whether the requested fields are" \
-                        "available in tables or not. If someone asks about car availability you will answer from db. " \
-                        "& kindly don't answer with just yes/no. Give the complete details of the product if you have."
 
-STARTER_MESSAGE = "Ask me anything about USED IMPORTS AUTO LLC!"
-
-SYSTEM_CONTENT_MESSAGE = (
-    "You are a helpful chatbot who is tasked with answering questions about USED IMPORTS AUTO LLC."
-    "Actually, you have three main tools:"
-    "1- Document Tool (Use it when the question is related to the general information about company"
-    "details which is related to the vehicles and company itself. Also search for company terms and condition and "
-    "other SOPs.)"
-    "2- SQL Tool (Use this tool when a user ask about vehicles or cars information if present in the database."
-    "We are using database name vehicles which contains all vehicles or cars in our inventory. This is our table"
-    "schema  Vehicles ("
-        "id INTEGER PRIMARY KEY,"
-        "make TEXT (means which company's or brand's car it is),"
-        "model TEXT (means what is the name of the model of this car),"
-        "year INTEGER (means what is the model year of the car),"
-        "color TEXT (what is the color of the car)"
-    ")"
-    "If query contains any field which is not available in my cars db schema just say requested data not available"
-    "3- Search Tool (In case you don't find anything related to the company and its relevant data and inventory then"
-    "you may search it on google and show the answer.)"
+DOCUMENT_TOOL_DESCRIPTION = (
+    "Searches and returns texts regarding Terms and conditions documents for car brands "
+    "cover essential information related to vehicle ownership. This includes details on "
+    "warranties, maintenance requirements, usage restrictions, ownership transfer procedures, "
+    "liability disclaimers, termination of services, privacy and data collection policies, "
+    "compliance with laws, intellectual property rights, customer responsibilities, and dispute "
+    "resolution processes. It's crucial for car owners to carefully review these documents to "
+    "understand their rights and obligations."
 )
 
+SEARCH_TOOL_DESCRIPTION = (
+    "If you cannot find the answer in LLC documents and the user query is related to vehicles "
+    "then Use this to lookup information from google search engine and if the query isn't "
+    "related to the vehicles and its finance just don't use this tool and answer with that "
+    "kindly ask only about vehicles information as we deal only vehicles."
+)
+
+
+SQL_TOOL_DESCRIPTION = """If question is ask about the car/vehicles information which is in inventory then
+use this tool. You have a database named, Inventory360 and a table named, InventoryLog. Search the records
+here and gives the answer with brief details of the car or cars as the sales manager does. Dont answer like Yes
+ or no we have or dont have etc.
+ In case the query Result is empty or you dont find any relevent data in the inventory then recommend similar
+ cars to the customer by querying again by altering the make, model or year"""
+
+_DEFAULT_TEMPLATE = """Given an input question, first create a syntactically correct {dialect} query to run in MS SQL 
+Server, then look at the results of the query and return the answer.
+Use the following format:
+
+Question: "Question here"
+SQLQuery: "SQL Query to run"
+SQLResult: "Result of the SQLQuery"
+Answer: "Final answer here"
+
+Only use the following tables:
+
+{table_info}
+schema_description = "Schema Information for InventoryLog:\n"
+    columns_info = [
+        {'name': 'Id', 'type': 'INTEGER', 'constraints': 'NOT NULL IDENTITY(1,1) PRIMARY KEY'},
+        {'name': 'StoreId', 'type': 'INTEGER', 'constraints': 'NULL'},
+        {'name': 'ActualLocation', 'type': 'VARCHAR(500)', 'constraints': 'NULL'},
+        {'name': 'PurchaseDate', 'type': 'DATE', 'constraints': 'NULL'},
+        {'name': 'CheckInDate', 'type': 'DATE', 'constraints': 'NULL'},
+        {'name': 'Year', 'type': 'INTEGER', 'constraints': 'NULL'},
+        {'name': 'Make', 'type': 'VARCHAR(50)', 'constraints': 'NULL'},
+        {'name': 'Model', 'type': 'VARCHAR(50)', 'constraints': 'NULL'},
+        {'name': 'Trim', 'type': 'VARCHAR(50)', 'constraints': 'NULL'},
+        {'name': 'BodyTypeId', 'type': 'INTEGER', 'constraints': 'NULL'},
+        {'name': 'InteriorColorId', 'type': 'INTEGER', 'constraints': 'NULL'},
+        {'name': 'ExteriorColorId', 'type': 'INTEGER', 'constraints': 'NULL'},
+        {'name': 'MilesIn', 'type': 'INTEGER', 'constraints': 'NULL'},
+        {'name': 'MileOut', 'type': 'INTEGER', 'constraints': 'NULL'},
+        {'name': 'Doors', 'type': 'INTEGER', 'constraints': 'NULL'},
+        {'name': 'Cylenders', 'type': 'INTEGER', 'constraints': 'NULL'},
+        {'name': 'FuelTypeId', 'type': 'INTEGER', 'constraints': 'NULL'},
+        {'name': 'DriveTrainId', 'type': 'INTEGER', 'constraints': 'NULL'},
+        {'name': 'AvailablityId', 'type': 'INTEGER', 'constraints': 'NULL'},
+        {'name': 'SoldDate', 'type': 'DATETIME', 'constraints': 'NULL'},
+        {'name': 'IsLuxury', 'type': 'BIT', 'constraints': 'NULL'}
+    ]
+If someone asks for the table Car/Vehicles, they really mean the InventoryLog table.
+Always put semicolon at the end of the query.
+Question: {input}"""
+
+PROMPT = PromptTemplate(
+    input_variables=["input", ], template=_DEFAULT_TEMPLATE
+)
+examples = [
+    {"input": "List all Cars/Vehicles.", "query": "SELECT * FROM InventoryLog;"},
+
+    {
+        "input": "Find the total Milage of all cars/vehicles.",
+        "query": "SELECT SUM(MilesIn) FROM InventoryLog;",
+    },
+    {
+        "input": "List all honda cars.",
+        "query": "SELECT * FROM InventoryLog WHERE Make = 'honda';",
+    },
+    {
+        "input": "How many cars are there in the store with ID 5?",
+        "query": "SELECT COUNT(*) FROM InventoryLog WHERE StoreId = 5;",
+    },
+    {
+        "input": "Find the total number of cars/vehicles.",
+        "query": "SELECT COUNT(*) FROM InventoryLog;",
+    },
+    {
+        "input": "List all cars/vehicles that have milage more than 1000 miles.",
+        "query": "SELECT * FROM InventoryLog WHERE MilesIn > 1000;",
+    },
+    {
+        "input": "Which cars are from the year 2000?",
+        "query": "SELECT * FROM InventoryLog WHERE strftime('%Y', Year) = '2000';",
+    },
+]
