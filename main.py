@@ -80,24 +80,20 @@ def setup_search_tool():
 
 
 def setup_sql_tool(llm):
-    try:
-        db = SQLDatabase.from_uri(DB_URI, include_tables=['inventorylog'])
-        toolkit = SQLDatabaseToolkit(db=db, llm=llm, )
-        agent_executor = create_sql_agent(
-            llm=llm,
-            db=db,
-            toolkit=toolkit,
-            prompt=PROMPT,
-            verbose=True
-        )
-        return Tool(
-            name="sql_database_tool",
-            func=agent_executor.run,
-            description=SQL_TOOL_DESCRIPTION
-        )
-    except Exception as e:
-        print(f"Error connecting to Postgres Database: {str(e)}")
-    return 
+    db = SQLDatabase.from_uri(DB_URI, include_tables=['inventorylog'])
+    toolkit = SQLDatabaseToolkit(db=db, llm=llm, )
+    agent_executor = create_sql_agent(
+        llm=llm,
+        db=db,
+        toolkit=toolkit,
+        prompt=PROMPT,
+        verbose=True
+    )
+    return Tool(
+        name="sql_database_tool",
+        func=agent_executor.run,
+        description=SQL_TOOL_DESCRIPTION
+    )
 
 def create_agent(llm, tools):
     message = SystemMessage(content=SYSTEM_CONTENT_MESSAGE)
