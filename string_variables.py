@@ -27,7 +27,7 @@ here and gives the answer with brief details of the car or cars as the sales man
  In case the query Result is empty or you dont find any relevent data in the inventory then recommend similar
  cars to the customer by querying again by altering the make, model or year"""
 
-_DEFAULT_TEMPLATE = """Given an input question, first create a postgres syntactically correct {dialect} query to run, 
+_DEFAULT_TEMPLATE = """Given an input question, first create a postgres syntactically correct query to run, 
 then look at the results of the query and return the answer.
 Use the following format:
 
@@ -37,30 +37,20 @@ SQLResult: "Result of the SQLQuery"
 Answer: "Final answer here"
 
 Only use the following tables:
-
-{table_info}
+table info:
 schema_description = "Schema Information for InventoryLog:\n"
     columns_info = [
         {'name': 'Id', 'type': 'INTEGER', 'constraints': 'NOT NULL IDENTITY(1,1) PRIMARY KEY'},
         {'name': 'StoreId', 'type': 'INTEGER', 'constraints': 'NULL'},
         {'name': 'ActualLocation', 'type': 'VARCHAR(500)', 'constraints': 'NULL'},
-        {'name': 'PurchaseDate', 'type': 'DATE', 'constraints': 'NULL'},
         {'name': 'CheckInDate', 'type': 'DATE', 'constraints': 'NULL'},
         {'name': 'Year', 'type': 'INTEGER', 'constraints': 'NULL'},
         {'name': 'Make', 'type': 'VARCHAR(50)', 'constraints': 'NULL'},
         {'name': 'Model', 'type': 'VARCHAR(50)', 'constraints': 'NULL'},
-        {'name': 'Trim', 'type': 'VARCHAR(50)', 'constraints': 'NULL'},
-        {'name': 'BodyTypeId', 'type': 'INTEGER', 'constraints': 'NULL'},
-        {'name': 'InteriorColorId', 'type': 'INTEGER', 'constraints': 'NULL'},
-        {'name': 'ExteriorColorId', 'type': 'INTEGER', 'constraints': 'NULL'},
         {'name': 'MilesIn', 'type': 'INTEGER', 'constraints': 'NULL'},
-        {'name': 'MileOut', 'type': 'INTEGER', 'constraints': 'NULL'},
         {'name': 'Doors', 'type': 'INTEGER', 'constraints': 'NULL'},
         {'name': 'Cylenders', 'type': 'INTEGER', 'constraints': 'NULL'},
-        {'name': 'FuelTypeId', 'type': 'INTEGER', 'constraints': 'NULL'},
-        {'name': 'DriveTrainId', 'type': 'INTEGER', 'constraints': 'NULL'},
         {'name': 'AvailablityId', 'type': 'INTEGER', 'constraints': 'NULL'},
-        {'name': 'SoldDate', 'type': 'DATETIME', 'constraints': 'NULL'},
         {'name': 'IsLuxury', 'type': 'BIT', 'constraints': 'NULL'}
     ]
 If someone asks for the table Car/Vehicles, they really mean the InventoryLog table.

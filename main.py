@@ -85,7 +85,6 @@ def setup_sql_tool(llm):
     agent_executor = create_sql_agent(
         llm=llm,
         toolkit=toolkit,
-        prompt=PROMPT,
         verbose=True
     )
     return Tool(
