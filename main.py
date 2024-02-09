@@ -36,7 +36,7 @@ if not selected_brand:
 
 # Constants and Configurations
 PDF_DIR = "./brands_docs/"
-DB_URI = 'postgresql+psycopg2://postgres:root@localhost:5432/inventory360'
+DB_URI = 'postgresql+psycopg2://postgres:root@127.0.0.1:5432/inventory360'
 # DB_URI = psycopg2.connect(host='172.212.83.28', dbname='inventory360', user='postgres', password='root')
 SYSTEM_CONTENT_MESSAGE = (
     f"You are an Customer Support agent and you are bound to answer questions related to the {selected_brand} Cars."
@@ -132,15 +132,16 @@ for msg in st.session_state.messages:
 prompt = st.chat_input(placeholder=starter_message)
 if prompt:
     st.chat_message("user").write(prompt)
-    with st.chat_message("assistant"):
-        # st_callback = StreamlitCallbackHandler(st.container())
-        response = agent_executor(
-            inputs={"input": prompt, "history": st.session_state.messages, },
-            callbacks=[],
-            include_run_info=True,
-        )
-        output_msg = AIMessage(content=response["output"])
-        st.session_state.messages.append(output_msg)
-        st.write(output_msg.content)
-        memory.save_context({"input": prompt}, response)
-        st.session_state["messages"] = memory.buffer
+    with st.spinner("We are looking for your desired info. Thanks for waiting..."):  # Display a loading spinner
+        with st.chat_message("assistant"):
+            response = agent_executor(
+                inputs={"input": prompt, "history": st.session_state.messages},
+                callbacks=[],
+                include_run_info=True,
+            )
+
+            output_msg = AIMessage(content=response["output"])
+            st.session_state.messages.append(output_msg)
+            st.write(output_msg.content)
+            memory.save_context({"input": prompt}, response)
+            st.session_state["messages"] = memory.buffer
